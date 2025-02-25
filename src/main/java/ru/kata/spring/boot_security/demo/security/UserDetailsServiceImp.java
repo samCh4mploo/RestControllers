@@ -18,15 +18,15 @@ import java.util.stream.Collectors;
 @Service
 public class UserDetailsServiceImp implements UserDetailsService {
 
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    public void setUserService(UserService userService) {
+    public UserDetailsServiceImp(UserService userService) {
         this.userService = userService;
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userService.findByUsername(username);
         if (user == null) {

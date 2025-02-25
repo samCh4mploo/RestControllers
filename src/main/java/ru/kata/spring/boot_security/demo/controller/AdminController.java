@@ -1,26 +1,24 @@
-package ru.kata.spring.boot_security.demo.controllers;
+package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
 import java.security.Principal;
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    public void setUserService(UserService userService) {
+    public AdminController(UserService userService) {
         this.userService = userService;
     }
 
@@ -46,7 +44,11 @@ public class AdminController {
     }
 
     @PostMapping
-    public String create(@ModelAttribute("user") @Valid User user) {
+    public String create(@ModelAttribute("user") @Valid User user, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("roles", userService.findRoles());
+            return "admin";
+        }
         userService.saveUser(user);
         return "redirect:/admin";
     }
@@ -59,7 +61,12 @@ public class AdminController {
     }
 
     @PatchMapping("/{id}")
-    public String updateUser(@PathVariable("id") Long id, @ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
+    public String updateUser(@PathVariable("id") Long id, @ModelAttribute("user") @Valid User user,
+                             BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("roles", userService.findRoles());
+            return "admin";
+        }
         userService.updateUserById(id, user);
         return "redirect:/admin";
     }
