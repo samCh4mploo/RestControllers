@@ -1,18 +1,18 @@
 package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.security.Principal;
 
-@Controller
-@RequestMapping("/user")
-public class UserController {
+@RestController
+@RequestMapping("/active")
+public class UserRestController {
 
     private UserService userService;
 
@@ -21,10 +21,8 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
-    public String userPage(Model model, Principal principal) {
-        model.addAttribute("user", userService.findByUsername(principal.getName()));
-        model.addAttribute("usersId", userService.findByUsername(principal.getName()));
-        return "user";
+    @GetMapping("/user")
+    public ResponseEntity<User> showUser(Principal principal) {
+        return ResponseEntity.ok(userService.findByUsername(principal.getName()));
     }
 }
