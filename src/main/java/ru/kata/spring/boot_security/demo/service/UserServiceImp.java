@@ -8,6 +8,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
+import ru.kata.spring.boot_security.demo.exception.UsernameAlreadyExistsException;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -45,8 +46,8 @@ public class UserServiceImp implements UserService {
     @Override
     @Transactional
     public void saveUser(User user) {
-        if (userRepository.findAll().stream().map(User::getUsername).anyMatch(u->u.equals(user.getUsername()))) {
-            throw new RuntimeException("Такая почта уже существует");
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new UsernameAlreadyExistsException("Пользователь с таким username уже существует: " + user.getUsername());
         } else {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
@@ -56,11 +57,9 @@ public class UserServiceImp implements UserService {
     @Override
     @Transactional
     public void updateUserById(Long id, User user) {
-        // Находим существующего пользователя по id
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
-        // Обновляем поля, если они переданы в объекте user
         if (user.getUsername() != null && !user.getUsername().isEmpty()) {
             existingUser.setUsername(user.getUsername());
         }
@@ -81,7 +80,6 @@ public class UserServiceImp implements UserService {
             existingUser.setAge(user.getAge());
         }
 
-        // Сохраняем обновленного пользователя
         userRepository.save(existingUser);
     }
 
@@ -95,6 +93,4 @@ public class UserServiceImp implements UserService {
     public List<Role> findRoles() {
         return roleRepository.findAll();
     }
-
-
 }
