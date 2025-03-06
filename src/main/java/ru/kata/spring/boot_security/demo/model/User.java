@@ -1,20 +1,10 @@
 package ru.kata.spring.boot_security.demo.model;
 
 
-import org.hibernate.proxy.HibernateProxy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Column;
-import javax.persistence.Table;
-import javax.persistence.ManyToMany;
-import javax.persistence.CascadeType;
-import javax.persistence.JoinTable;
-import javax.persistence.JoinColumn;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -31,7 +21,7 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "Email", unique = true)
+    @Column(name = "Email")
     @NotEmpty(message = "username should not be empty")
     @Email(message = "Email should be valid")
     private String username;
@@ -50,7 +40,7 @@ public class User implements UserDetails {
     @Min(value = 0, message = "Age should be greater than 0")
     private int age;
 
-    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -167,36 +157,17 @@ public class User implements UserDetails {
 
     @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
-
-        if (o == null) return false;
-
-        Class<?>oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy)o).getHibernateLazyInitializer().
-                getPersistentClass() : o.getClass();
-
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).
-                getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-
-        if (thisEffectiveClass != oEffectiveClass) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         User user = (User) o;
 
-        return getId() != null && Objects.equals(getId(), user.getId()) &&
-                Objects.equals(getUsername(), user.getUsername()) &&
-                Objects.equals(getPassword(), user.getPassword()) &&
-                Objects.equals(getFirstname(), user.getFirstname()) &&
-                Objects.equals(getLastname(), user.getLastname()) &&
-                Objects.equals(getRoles(), user.getRoles()) &&
-                Objects.equals(getAge(), user.getAge());
+        return Objects.equals(id, user.id) && age == user.age && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && Objects.equals(roles, user.roles);
     }
 
     @Override
     public int hashCode() {
-
-        return this instanceof HibernateProxy
-                ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()
-                : getClass().hashCode();
+        return Objects.hash(id, username, password, firstname, lastname, age, roles);
     }
 
 }
